@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Image from "next/image";
 
 type Grade = "B3" | "B4" | "M1" | "M2";
 type TargetMode = "all" | "custom";
@@ -253,7 +254,6 @@ export default function Page() {
     weightByGrade,
     sumWeight,
     copyText,
-    expenseSummaries,
   } = useMemo(() => {
     const teacherTotal = parseMoney(teacherTotalStr);
 
@@ -403,23 +403,56 @@ export default function Page() {
       weightByGrade,
       sumWeight,
       copyText: copyLines.join("\n"),
-      expenseSummaries,
     };
   }, [expenses, people, teacherTotalStr, title, wB3, wB4, wM1, wM2]);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="mx-auto max-w-6xl p-6">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-gray-900">
+      <Image
+        className="pointer-events-none absolute -left-8 -top-8 hidden opacity-45 md:block"
+        src="/party-snacks.svg"
+        alt=""
+        aria-hidden="true"
+        width={210}
+        height={172}
+        priority
+      />
+      <Image
+        className="pointer-events-none absolute -right-8 -top-6 hidden rotate-12 opacity-50 md:block"
+        src="/party-snacks.svg"
+        alt=""
+        aria-hidden="true"
+        width={220}
+        height={180}
+        priority
+      />
+      <Image
+        className="pointer-events-none absolute -bottom-8 -left-10 hidden rotate-[-14deg] opacity-40 lg:block"
+        src="/party-snacks.svg"
+        alt=""
+        aria-hidden="true"
+        width={220}
+        height={180}
+      />
+      <Image
+        className="pointer-events-none absolute -bottom-10 -right-8 hidden rotate-[18deg] opacity-40 lg:block"
+        src="/party-snacks.svg"
+        alt=""
+        aria-hidden="true"
+        width={205}
+        height={168}
+      />
+      <div className="relative mx-auto max-w-6xl p-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <h1 className="text-2xl font-semibold">割り勘（WALICA風 + 学年重み）</h1>
+          <h1 className="text-2xl font-semibold">割り勘アプリ（研究室用）</h1>
           <div className="text-xs text-gray-500">全体支出と個人の分を分けて、負担額を自動集計</div>
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           {/* 入力 */}
           <div className="space-y-4">
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-              <h2 className="text-lg font-medium">基本</h2>
+            <div className="rounded-2xl bg-sky-50 p-5 shadow-sm ring-1 ring-sky-200">
+              <h2 className="text-lg font-semibold text-sky-900">基本</h2>
 
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="sm:col-span-2">
@@ -470,9 +503,9 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div className="rounded-2xl bg-emerald-50 p-5 shadow-sm ring-1 ring-emerald-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-medium">参加者</h2>
+                <h2 className="text-lg font-semibold text-emerald-900">参加者</h2>
                 <button
                   className="rounded-xl bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:opacity-90"
                   onClick={addPerson}
@@ -528,9 +561,9 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div className="rounded-2xl bg-violet-50 p-5 shadow-sm ring-1 ring-violet-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-medium">支出</h2>
+                <h2 className="text-lg font-semibold text-violet-900">支出</h2>
                 <button
                   className="rounded-xl bg-gray-900 px-4 py-2 text-xs font-medium text-white hover:opacity-90"
                   onClick={addExpense}
@@ -648,7 +681,7 @@ export default function Page() {
 
           {/* 出力（Walica寄せ：サマリー固定 + 送金ファースト） */}
           <div className="space-y-4">
-            <div className="sticky top-4 z-10 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div className="sticky top-4 z-10 rounded-2xl bg-amber-50 p-5 shadow-sm ring-1 ring-amber-200">
               <SummaryCard
                 title={title}
                 total={total}
@@ -660,7 +693,7 @@ export default function Page() {
               />
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+            <div className="rounded-2xl bg-cyan-50 p-5 shadow-sm ring-1 ring-cyan-200">
               <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
                 <KpiInline label="全体支出" value={`${formatYen(allTargetTotal)}円`} />
                 <KpiInline label="学生負担" value={`${formatYen(remainder)}円`} />
@@ -685,8 +718,8 @@ export default function Page() {
               </div>
             )}
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-              <h2 className="text-lg font-medium">送金</h2>
+            <div className="rounded-2xl bg-rose-50 p-5 shadow-sm ring-1 ring-rose-200">
+              <h2 className="text-lg font-semibold text-rose-900">送金</h2>
 
               {transfers.length === 0 ? (
                 <p className="mt-2 text-sm text-gray-600">送金は不要です。</p>
@@ -726,23 +759,8 @@ export default function Page() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-              <h2 className="text-lg font-medium">支出一覧</h2>
-              {expenseSummaries.length === 0 ? (
-                <p className="mt-2 text-sm text-gray-600">有効な支出がありません。</p>
-              ) : (
-                <div className="mt-3 space-y-2">
-                  {expenseSummaries.map((line, idx) => (
-                    <div key={idx} className="rounded-xl bg-gray-50 px-4 py-3 text-sm ring-1 ring-gray-200">
-                      {line}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-              <h2 className="text-lg font-medium">内訳</h2>
+            <div className="rounded-2xl bg-indigo-50 p-5 shadow-sm ring-1 ring-indigo-200">
+              <h2 className="text-lg font-semibold text-indigo-900">内訳</h2>
 
               <div className="mt-3 overflow-x-auto rounded-xl border border-gray-200">
                 <table className="w-full text-sm">
