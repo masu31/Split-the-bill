@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Split-the-bill
+
+A simple web application for splitting bills among members.
+
+## Overview
+
+Split-the-bill helps calculate how much each person should pay or receive when multiple people have paid different amounts in advance.
+
+Users can enter each member's name, group, and paid amount, and the application automatically calculates the final balance and transfer amounts.
+
+## Features
+
+- Add and remove members
+- Enter paid amounts for each member
+- Set different cost-sharing weights by group
+- Calculate each member's balance
+- Generate transfer instructions
+
+## Tech Stack
+
+- Next.js
+- React
+- TypeScript
 
 ## Getting Started
 
-First, run the development server:
+First, install the dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the following URL in your browser:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```bash
+.
+├── app
+├── public
+├── package.json
+├── next.config.ts
+└── tsconfig.json
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Future Improvements
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Save input data
+- Improve mobile layout
+- Add a copy function for transfer results
+- Export calculation results
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 日本語概要
 
-## Deploy on Vercel
+Split-the-billは、複数人で発生した立替金額をもとに、各メンバーの負担額や送金額を自動で計算するWebアプリケーションです。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+メンバーごとの立替金額や負担割合を入力することで、誰が誰にいくら支払えばよいかを簡単に確認できます。
