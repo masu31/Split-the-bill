@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "./theme";
 
 export const metadata: Metadata = {
   title: "割り勘アプリ（研究室用）",
@@ -22,7 +23,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
+      <head>
+        {/*
+          描画前に data-theme を立てて、テーマのちらつきを防ぐ。
+          中身は theme.ts の固定文字列のみで、外部入力は混ざらない。
+        */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="antialiased">{children}</body>
     </html>
   );

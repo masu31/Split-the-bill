@@ -143,6 +143,8 @@ function safeLocalStorage(): Storage | null {
 type Snapshot = {
   state: AppState;
   recoveredStorage: boolean;
+  /** localStorage に読める保存データがあったか（初回訪問の判定に使う） */
+  hasStoredState: boolean;
 };
 
 type Store = {
@@ -157,7 +159,7 @@ let store: Store | null = null;
 function getStore(initialState: AppState): Store {
   if (!store) {
     store = {
-      snapshot: { state: initialState, recoveredStorage: false },
+      snapshot: { state: initialState, recoveredStorage: false, hasStoredState: false },
       loaded: false,
       listeners: new Set(),
     };
@@ -177,6 +179,7 @@ function loadOnce(current: Store) {
     current.snapshot = {
       state: result.state ?? current.snapshot.state,
       recoveredStorage: result.recovered,
+      hasStoredState: result.state !== null,
     };
   }
 }
@@ -195,6 +198,9 @@ type StoredStateResult = {
   state: AppState;
   setState: (action: AppState | ((previous: AppState) => AppState)) => void;
   recoveredStorage: boolean;
+  hasStoredState: boolean;
+  /** localStorage を読み終えたか。読む前に初回訪問と誤判定しないために使う。 */
+  hydrated: boolean;
 };
 
 /**
@@ -213,6 +219,7 @@ export function useStoredState(initialState: AppState): StoredStateResult {
   const initialSnapshotRef = useRef<Snapshot>({
     state: initialState,
     recoveredStorage: false,
+    hasStoredState: false,
   });
 
   const subscribe = useCallback((onStoreChange: () => void) => {
@@ -232,6 +239,13 @@ export function useStoredState(initialState: AppState): StoredStateResult {
 
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
+  // サーバー側では localStorage を読めないので、必ず未ハイドレーション扱いにする
+  const hydrated = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  );
+
   const setState = useCallback(
     (action: AppState | ((previous: AppState) => AppState)) => {
       const target = store!;
@@ -244,7 +258,8 @@ export function useStoredState(initialState: AppState): StoredStateResult {
       if (Object.is(next, target.snapshot.state)) return;
 
       // 一度でも編集したら「復旧しました」の表示は引っ込める
-      target.snapshot = { state: next, recoveredStorage: false };
+      // 一度でも保存したら、次からは初回訪問ではない
+      target.snapshot = { state: next, recoveredStorage: false, hasStoredState: true };
       persist(next);
       for (const listener of target.listeners) listener();
     },
@@ -255,6 +270,8 @@ export function useStoredState(initialState: AppState): StoredStateResult {
     state: snapshot.state,
     setState,
     recoveredStorage: snapshot.recoveredStorage,
+    hasStoredState: snapshot.hasStoredState,
+    hydrated,
   };
 }
 

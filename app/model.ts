@@ -104,8 +104,25 @@ export const INITIAL_STATE: AppState = {
   ],
 };
 
+/**
+ * 空の初期状態。グループは1つ必要（参加者の所属先になり、保存データの
+ * 検証も groups.length === 0 を弾く）なので、1つだけ置く。
+ */
+export const EMPTY_STATE: AppState = {
+  version: APP_STATE_VERSION,
+  title: "",
+  teacherTotalStr: "",
+  groups: [{ id: "group-default", name: "全員", weightStr: "1" }],
+  people: [],
+  expenses: [],
+};
+
 export function cloneInitialState(): AppState {
   return structuredClone(INITIAL_STATE);
+}
+
+export function cloneEmptyState(): AppState {
+  return structuredClone(EMPTY_STATE);
 }
 
 /**
