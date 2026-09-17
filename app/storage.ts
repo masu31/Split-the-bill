@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useSyncExternalStore } from "react";
 import {
   APP_STATE_VERSION,
   type AppState,
@@ -101,7 +101,14 @@ export function loadStoredState(storage: ReadableStorage): {
   state: AppState | null;
   recovered: boolean;
 } {
-  const raw = storage.getItem(STORAGE_KEY);
+  let raw: string | null;
+  try {
+    raw = storage.getItem(STORAGE_KEY);
+  } catch {
+    // サイトデータがブロックされていると getItem 自体が投げる。
+    // 読めないだけなので「壊れていた」とは扱わず、初期状態で続行する。
+    return { state: null, recovered: false };
+  }
   if (raw === null) return { state: null, recovered: false };
 
   try {
@@ -111,36 +118,147 @@ export function loadStoredState(storage: ReadableStorage): {
     // The same recovery path handles malformed JSON and an invalid schema.
   }
 
-  storage.removeItem(STORAGE_KEY);
+  try {
+    storage.removeItem(STORAGE_KEY);
+  } catch {
+    // 消せなくても、この後は初期状態で動かせる
+  }
   return { state: null, recovered: true };
+}
+
+/**
+ * localStorage は「使えない」ことがある。
+ * - Cookie / サイトデータをブロックしていると localStorage への参照自体が throw する
+ * - プライベートモードや容量超過では setItem が QuotaExceededError を投げる
+ * どちらも保存を諦めるだけでよく、アプリを落としてはいけない。
+ */
+function safeLocalStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+type Snapshot = {
+  state: AppState;
+  recoveredStorage: boolean;
+};
+
+type Store = {
+  snapshot: Snapshot;
+  loaded: boolean;
+  listeners: Set<() => void>;
+};
+
+// モジュール内に1つ。読み込み済みかどうかもここで持つ。
+let store: Store | null = null;
+
+function getStore(initialState: AppState): Store {
+  if (!store) {
+    store = {
+      snapshot: { state: initialState, recoveredStorage: false },
+      loaded: false,
+      listeners: new Set(),
+    };
+  }
+  return store;
+}
+
+function loadOnce(current: Store) {
+  if (current.loaded || typeof window === "undefined") return;
+  current.loaded = true;
+
+  const storage = safeLocalStorage();
+  if (!storage) return;
+
+  const result = loadStoredState(storage);
+  if (result.state || result.recovered) {
+    current.snapshot = {
+      state: result.state ?? current.snapshot.state,
+      recoveredStorage: result.recovered,
+    };
+  }
+}
+
+function persist(state: AppState) {
+  const storage = safeLocalStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // 保存できなくても計算は続けられるので、黙って諦める
+  }
 }
 
 type StoredStateResult = {
   state: AppState;
-  setState: React.Dispatch<React.SetStateAction<AppState>>;
+  setState: (action: AppState | ((previous: AppState) => AppState)) => void;
   recoveredStorage: boolean;
 };
 
+/**
+ * 保存データを「外部ストア」として購読する。
+ *
+ * useEffect で読み込んで setState すると React 19 の set-state-in-effect に触れる。
+ * setTimeout で逃がすと lint は通るが、初期値が一瞬描画されてから保存値へ
+ * 差し替わる（タイトル欄が「飲み会」→ 保存値とちらつく）。
+ * useSyncExternalStore なら SSR / ハイドレーションは getServerSnapshot の初期値を
+ * 使い、そのままの描画で保存値に切り替わるので、ちらつきも余計な再描画もない。
+ */
 export function useStoredState(initialState: AppState): StoredStateResult {
-  const [state, setState] = useState(initialState);
-  const [recoveredStorage, setRecoveredStorage] = useState(false);
-  const loadedRef = useRef(false);
+  // レンダー中に呼ぶが、2回目以降は既存のストアを返すだけなので冪等
+  getStore(initialState);
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      const stored = loadStoredState(localStorage);
-      if (stored.state) setState(stored.state);
-      if (stored.recovered) setRecoveredStorage(true);
-      loadedRef.current = true;
-    }, 0);
+  const initialSnapshotRef = useRef<Snapshot>({
+    state: initialState,
+    recoveredStorage: false,
+  });
 
-    return () => window.clearTimeout(timeoutId);
+  const subscribe = useCallback((onStoreChange: () => void) => {
+    const target = store!;
+    target.listeners.add(onStoreChange);
+    return () => {
+      target.listeners.delete(onStoreChange);
+    };
   }, []);
 
-  useEffect(() => {
-    if (!loadedRef.current) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+  const getSnapshot = useCallback(() => {
+    loadOnce(store!);
+    return store!.snapshot;
+  }, []);
 
-  return { state, setState, recoveredStorage };
+  const getServerSnapshot = useCallback(() => initialSnapshotRef.current, []);
+
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  const setState = useCallback(
+    (action: AppState | ((previous: AppState) => AppState)) => {
+      const target = store!;
+      loadOnce(target);
+
+      const next =
+        typeof action === "function"
+          ? (action as (previous: AppState) => AppState)(target.snapshot.state)
+          : action;
+      if (Object.is(next, target.snapshot.state)) return;
+
+      // 一度でも編集したら「復旧しました」の表示は引っ込める
+      target.snapshot = { state: next, recoveredStorage: false };
+      persist(next);
+      for (const listener of target.listeners) listener();
+    },
+    []
+  );
+
+  return {
+    state: snapshot.state,
+    setState,
+    recoveredStorage: snapshot.recoveredStorage,
+  };
+}
+
+/** テスト用にモジュール内の状態を捨てる */
+export function resetStoreForTests() {
+  store = null;
 }

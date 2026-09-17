@@ -11,6 +11,7 @@
 - 各自の負担・立替・差額と、必要な送金を自動計算
 - 計算結果をLINEなどへ貼り付けやすい文章でコピー
 - 入力内容をブラウザへ自動保存
+- ライト／ダークテーマ、モバイルレイアウト、結果だけを出す印刷スタイル
 
 ## ローカルで動かす
 
@@ -31,12 +32,34 @@ npm run build
 
 ## ファイル構成
 
-- `app/page.tsx`: 入力画面、結果表示、リセットとコピー操作
+ロジック（`app/*.ts`）は UI に依存しないので、そのままテストできます。
+
+- `app/page.tsx`: 状態管理と全体レイアウト
 - `app/calc.ts`: 配分、差額、送金の計算と入力値検証
 - `app/model.ts`: データ型、初期値、ID生成
 - `app/storage.ts`: localStorageの読み書きと保存データ検証
+- `app/clipboard.ts`: コピー処理（非セキュアな環境向けのフォールバック付き）
 - `app/*.test.ts`: 計算と保存データ検証の自動テスト
-- `public/party-snacks.svg`: 画面四隅の装飾画像
+- `app/globals.css`: デザイントークンと共通クラス（ライト／ダーク）
+- `app/components/`: 画面部品
+  - `ui.tsx`: アイコン、カード、入力ラベルなどの共通部品
+  - `BasicsEditor.tsx`: イベント名と先生チーム負担
+  - `GroupEditor.tsx`: グループと重み
+  - `PeopleEditor.tsx`: 参加者
+  - `ExpenseEditor.tsx`: 支出
+  - `ResultPanel.tsx`: サマリー、送金、内訳
+  - `ResetDialog.tsx`: リセットの確認ダイアログ
+- `public/party-snacks.svg`: 見出しの装飾画像
+
+## 動作環境について
+
+`http://192.168.x.x` のような非セキュアなオリジンでは、ブラウザが
+`crypto.randomUUID` と `navigator.clipboard` を提供しません。
+どちらも代替手段へ自動的に切り替わるため、研究室のLANで共有しても
+「追加」やコピーがそのまま使えます。
+
+`localStorage` が使えない環境（サイトデータのブロック、プライベートモード、
+容量超過）でも、保存を諦めるだけでアプリは動き続けます。
 
 ## 保存データ
 

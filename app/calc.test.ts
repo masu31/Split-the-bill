@@ -127,3 +127,42 @@ test("不正な金額や指数表記を拒否する", () => {
   assert.ok(validateMoneyInput("1e5").error);
   assert.equal(validateMoneyInput("12,000").value, 12000);
 });
+
+test("全角数字をそのまま受け付ける（日本語IME対策）", () => {
+  assert.deepEqual(validateMoneyInput("１２０００"), { value: 12000, error: null });
+  assert.deepEqual(validateMoneyInput("１，２００"), { value: 1200, error: null });
+  assert.equal(validateWeightInput("１．５").value, 1.5);
+});
+
+test("同名かつ同じグループでも表示名を一意にする", () => {
+  const names = buildDisplayNames([
+    { id: "a", name: "田中", groupName: "B3" },
+    { id: "b", name: "田中", groupName: "B3" },
+    { id: "c", name: "田中", groupName: "M1" },
+  ]);
+  assert.equal(names.get("a"), "田中(B3)・1");
+  assert.equal(names.get("b"), "田中(B3)・2");
+  assert.equal(names.get("c"), "田中(M1)");
+  assert.equal(new Set([...names.values()]).size, 3);
+});
+
+test("グループを自由に増やしても重み配分は合計を保つ", () => {
+  const state = cloneInitialState();
+  state.teacherTotalStr = "0";
+  state.groups.push({ id: "group-d1", name: "D1", weightStr: "5.5" });
+  state.people.push({ id: "person-e", name: "E", groupId: "group-d1" });
+  state.expenses = [
+    {
+      id: "only",
+      payerId: "person-a",
+      item: "会計",
+      amountStr: "33333",
+      targetMode: "all",
+      targetPersonIds: [],
+    },
+  ];
+
+  const result = calculateBill(state);
+  assert.equal(result.rows.reduce((sum, row) => sum + row.share, 0), 33333);
+  assert.equal(result.rows.find((row) => row.id === "person-e")?.weight, 5.5);
+});

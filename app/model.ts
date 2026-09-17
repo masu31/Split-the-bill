@@ -108,6 +108,20 @@ export function cloneInitialState(): AppState {
   return structuredClone(INITIAL_STATE);
 }
 
+/**
+ * crypto.randomUUID はセキュアコンテキスト（https / localhost）でしか生えない。
+ * 研究室の LAN に http://192.168.x.x で共有するとスマホ側で undefined になり、
+ * これが無いと「追加」ボタンが軒並み例外で止まるため、必ずフォールバックする。
+ */
 export function makeId(): string {
-  return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  }
+
+  return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
