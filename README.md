@@ -1,69 +1,43 @@
-# Split-the-bill
+# 割り勘アプリ（研究室用）
 
-A simple web application for splitting bills among members.
+研究室の飲み会やイベント向けの割り勘ツールです。参加者ごとの立替を支出単位で登録し、全体支出はグループ重み、個人指定の支出は対象者だけの均等割りで精算します。
 
-## Overview
+## 主な機能
 
-Split-the-bill helps calculate how much each person should pay or receive when multiple people have paid different amounts in advance.
+- 任意のグループ名と小数を含む重みを設定
+- 「全体」または選択した個人を対象に支出を登録
+- 先生チーム負担を全体支出だけから控除
+- 最大剰余法による1円単位の重み付き配分
+- 各自の負担・立替・差額と、必要な送金を自動計算
+- 計算結果をLINEなどへ貼り付けやすい文章でコピー
+- 入力内容をブラウザへ自動保存
 
-Users can enter each member's name, group, and paid amount, and the application automatically calculates the final balance and transfer amounts.
-
-## Features
-
-- Add and remove members
-- Enter paid amounts for each member
-- Set different cost-sharing weights by group
-- Calculate each member's balance
-- Generate transfer instructions
-
-## Tech Stack
-
-- Next.js
-- React
-- TypeScript
-
-## Getting Started
-
-First, install the dependencies:
+## ローカルで動かす
 
 ```bash
 npm install
-```
-
-Then, run the development server:
-
-```bash
 npm run dev
 ```
 
-Open the following URL in your browser:
+[http://localhost:3000](http://localhost:3000) をブラウザで開きます。
+
+## 確認コマンド
 
 ```bash
-http://localhost:3000
+npm test
+npm run lint
+npm run build
 ```
 
-## Project Structure
+## ファイル構成
 
-```bash
-.
-├── app
-├── public
-├── package.json
-├── next.config.ts
-└── tsconfig.json
-```
+- `app/page.tsx`: 入力画面、結果表示、リセットとコピー操作
+- `app/calc.ts`: 配分、差額、送金の計算と入力値検証
+- `app/model.ts`: データ型、初期値、ID生成
+- `app/storage.ts`: localStorageの読み書きと保存データ検証
+- `app/*.test.ts`: 計算と保存データ検証の自動テスト
+- `public/party-snacks.svg`: 画面四隅の装飾画像
 
-## Future Improvements
+## 保存データ
 
-- Save input data
-- Improve mobile layout
-- Add a copy function for transfer results
-- Export calculation results
-
-## 日本語概要
-
-Split-the-billは、研究室やゼミでのイベント後に発生する立替精算を簡単に行うためのWebアプリケーションです。
-
-メンバーごとの立替金額に加えて、学年やグループごとに異なる負担割合を設定でき、各メンバーの負担額や送金額を自動で計算します。
-
-通常の均等割りだけでなく、参加者の属性に応じて負担額が変わるケースにも対応できるようにしています。
+入力内容は端末のブラウザ内だけに保存され、サーバーへは送信しません。保存形式にはバージョン番号を付けています。JSONが壊れている、必須項目がない、所属グループが存在しないなど、現在の形式と互換性がない場合は該当データを削除して初期状態へ自動復旧します。
