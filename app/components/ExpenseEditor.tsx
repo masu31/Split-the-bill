@@ -15,6 +15,8 @@ import {
   fieldClass,
 } from "./ui";
 
+const AMOUNT_STEPS = [100, 500, 1000, 5000] as const;
+
 /** 名前が入っていて、送金表での表示名が決まっている参加者 */
 export type NamedPerson = { id: string; displayName: string };
 
@@ -114,6 +116,30 @@ function ExpenseCard({
             autoComplete="off"
           />
         </Field>
+      </div>
+
+      {/* 金額のクイック加算。欄の中に入れると縦に折り返して間延びするので、
+          グリッドの外に1行で置く。 */}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {AMOUNT_STEPS.map((step) => (
+          <button
+            key={step}
+            className="btn btn-ghost num min-h-9 px-2.5 py-1 text-[11px]"
+            onClick={() => onChange({ amountStr: String(amount + step) })}
+            type="button"
+          >
+            +{step.toLocaleString("ja-JP")}
+          </button>
+        ))}
+        {amount > 0 && (
+          <button
+            className="btn btn-danger-ghost min-h-9 px-2.5 py-1 text-[11px]"
+            onClick={() => onChange({ amountStr: "" })}
+            type="button"
+          >
+            クリア
+          </button>
+        )}
       </div>
 
       <fieldset className="mt-3">

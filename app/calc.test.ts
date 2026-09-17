@@ -174,3 +174,15 @@ test("参加者も支出も0件にできる（全部消して作り直せる）"
   assert.equal(result.total, 0);
   assert.ok(result.warnings.some((warning) => warning.includes("参加者がいません")));
 });
+
+test("画像のファイル名は ASCII に落として日付を付ける", async () => {
+  const { shareCardFileName } = await import("./shareImage.ts");
+  const day = new Date(2026, 8, 17);
+
+  // 日本語タイトルは blob の download 属性で無視されるため残さない
+  assert.equal(shareCardFileName("飲み会", day), "warikan-2026-09-17.png");
+  assert.equal(shareCardFileName("Welcome Party", day), "warikan-Welcome-Party-2026-09-17.png");
+  assert.equal(shareCardFileName("", day), "warikan-2026-09-17.png");
+  // パス区切りなどが混ざってもファイル名を壊さない
+  assert.equal(shareCardFileName("a/b:c", day), "warikan-a-b-c-2026-09-17.png");
+});

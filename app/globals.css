@@ -43,8 +43,14 @@
   --shadow-card: 0 1px 2px rgb(16 20 40 / 0.04), 0 8px 24px -12px rgb(16 20 40 / 0.12);
 }
 
+/*
+ * ダークの値は1か所にまとめ、2つの経路から適用する。
+ *   1. OS がダーク、かつ手動でライトを選んでいないとき
+ *   2. 手動でダークを選んだとき
+ * どちらも同じ宣言なので、片方だけ直して食い違うことがない。
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
 
     --canvas: #0d0f16;
@@ -77,6 +83,40 @@
 
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
   }
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --canvas: #0d0f16;
+    --canvas-accent: #141827;
+    --surface: #171a24;
+    --surface-2: #1f2331;
+    --line: #2b3040;
+    --line-strong: #3a4054;
+
+    --ink: #eceef5;
+    --ink-muted: #a3aabf;
+    --ink-subtle: #7a8299;
+
+    --brand: #818cf8;
+    --brand-hover: #a5b4fc;
+    --brand-soft: #1e2138;
+    --brand-ink: #c7d2fe;
+    --brand-ring: rgb(129 140 248 / 0.45);
+    /* ダークのブランド色は明るいので、白抜きではなく暗い文字を載せる */
+    --brand-contrast: #10131f;
+
+    --pos: #34d399;
+    --pos-soft: #12281f;
+    --neg: #fb7185;
+    --neg-soft: #2a151c;
+    --neg-ring: rgb(251 113 133 / 0.35);
+    --warn: #fbbf24;
+    --warn-soft: #2a2113;
+    --warn-line: #4a3a18;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
@@ -234,6 +274,12 @@ body {
   /* タップ領域を 44x44 以上にする（アイコンだけのボタンは幅が足りなくなる） */
   min-height: 2.75rem;
   min-width: 2.75rem;
+
+  /* 金額の +100 などの補助ボタンは、min-h-9 等で個別に小さくできる */
+  &:where(.min-h-9) {
+    min-height: 2.25rem;
+    min-width: 0;
+  }
   padding: 0.5rem 0.875rem;
   font-size: 0.8125rem;
   font-weight: 600;

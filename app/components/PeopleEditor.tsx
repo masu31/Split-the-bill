@@ -1,8 +1,64 @@
 "use client";
 
-import React, { useId } from "react";
+import React, { useId, useState } from "react";
 import type { GroupInput, PersonInput } from "../model";
 import { Avatar, EmptyState, Field, IconPlus, IconTrash, IconUsers, SectionCard } from "./ui";
+
+/** 「田中, 佐藤 鈴木」のような文字列を名前の配列にする */
+export function parseNameList(input: string): string[] {
+  return input
+    .split(/[,、\s\n\t]+/)
+    .map((name) => name.trim())
+    .filter((name) => name.length > 0);
+}
+
+function BulkAdd({ onAdd }: { onAdd: (names: string[]) => void }) {
+  const id = useId();
+  const [text, setText] = useState("");
+  const names = parseNameList(text);
+
+  function submit() {
+    if (names.length === 0) return;
+    onAdd(names);
+    setText("");
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-dashed border-line-strong p-3">
+      <label htmlFor={id} className="block text-xs font-medium text-ink-muted">
+        まとめて追加
+      </label>
+      <div className="mt-1.5 flex gap-2">
+        <input
+          id={id}
+          className="field"
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          onKeyDown={(event) => {
+            // IME の変換確定を Enter と取り違えないようにする
+            if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+              event.preventDefault();
+              submit();
+            }
+          }}
+          placeholder="田中, 佐藤, 鈴木"
+          autoComplete="off"
+        />
+        <button
+          className="btn btn-ghost shrink-0"
+          onClick={submit}
+          type="button"
+          disabled={names.length === 0}
+        >
+          {names.length > 0 ? `${names.length}人を追加` : "追加"}
+        </button>
+      </div>
+      <p className="mt-1 text-[11px] text-ink-subtle">
+        カンマ・読点・スペース・改行で区切れます。Enter でも追加できます。
+      </p>
+    </div>
+  );
+}
 
 function PersonCard({
   person,
@@ -83,6 +139,7 @@ export function PeopleEditor({
   weightByGroup,
   namedCount,
   onAdd,
+  onAddMany,
   onChange,
   onRemove,
 }: {
@@ -91,6 +148,7 @@ export function PeopleEditor({
   weightByGroup: Map<string, number>;
   namedCount: number;
   onAdd: () => void;
+  onAddMany: (names: string[]) => void;
   onChange: (id: string, patch: Partial<PersonInput>) => void;
   onRemove: (id: string) => void;
 }) {
@@ -108,7 +166,7 @@ export function PeopleEditor({
       }
     >
       {people.length === 0 ? (
-        <EmptyState>「追加」から参加者を登録してください。</EmptyState>
+        <EmptyState>下の「まとめて追加」に名前を並べるのが早いです。</EmptyState>
       ) : (
         <ul className="space-y-2.5">
           {people.map((person, index) => (
@@ -124,6 +182,8 @@ export function PeopleEditor({
           ))}
         </ul>
       )}
+
+      <BulkAdd onAdd={onAddMany} />
     </SectionCard>
   );
 }

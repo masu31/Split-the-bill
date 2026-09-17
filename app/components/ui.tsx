@@ -177,6 +177,85 @@ export function IconWarning({ className = iconBase }: IconProps) {
 /* Layout parts                                                               */
 /* ========================================================================== */
 
+export function IconSun({ className = iconBase }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.1 5.1l1.4 1.4M17.5 17.5l1.4 1.4M18.9 5.1l-1.4 1.4M6.5 17.5l-1.4 1.4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function IconMoon({ className = iconBase }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M20 13.4A8.2 8.2 0 0 1 10.6 4a8.4 8.4 0 1 0 9.4 9.4Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconDisplay({ className = iconBase }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="2.5" y="4" width="19" height="13" rx="2.2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8.5 21h7M12 17v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconImage({ className = iconBase }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="4.5" width="18" height="15" rx="2.4" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="8.8" cy="10" r="1.6" stroke="currentColor" strokeWidth="1.6" />
+      <path d="m4.5 17 4.6-4.3 3.4 3.1 3-2.6 4 3.6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconSparkle({ className = iconBase }: IconProps) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 3.5 13.9 9l5.6 1.9-5.6 1.9L12 18.4 10.1 12.8 4.5 10.9 10.1 9 12 3.5Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** ヘッダーのワードマーク。favicon（app/icon.svg）と同じ図形。 */
+export function Wordmark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`flex items-center gap-2 ${className}`}>
+      <svg className="h-6 w-6 shrink-0" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="var(--brand)" />
+        <path d="M16 5a11 11 0 0 1 0 22Z" fill="#fff" opacity=".95" />
+        <path d="M16 5a11 11 0 0 0 0 22Z" fill="#fff" opacity=".45" />
+        <path
+          d="M22.5 6.5 9.5 25.5"
+          stroke="var(--brand)"
+          strokeWidth="2.4"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="text-base font-bold tracking-tight">ワリカン</span>
+    </span>
+  );
+}
+
 export function SectionCard({
   icon,
   title,

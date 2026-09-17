@@ -12,6 +12,7 @@ import {
   IconArrowRight,
   IconCheck,
   IconCopy,
+  IconImage,
   IconSwap,
   IconTable,
   IconWarning,
@@ -123,11 +124,13 @@ export function TransferList({
   copyText,
   copied,
   onCopy,
+  onSaveImage,
 }: {
   transfers: Transfer[];
   copyText: string;
   copied: boolean;
   onCopy: () => void;
+  onSaveImage: () => void;
 }) {
   return (
     <SectionCard
@@ -140,10 +143,21 @@ export function TransferList({
           : "この通りに送れば全員の精算が終わります"
       }
       action={
-        <button className="btn btn-primary" onClick={onCopy} type="button">
-          {copied ? <IconCheck className="h-3.5 w-3.5" /> : <IconCopy className="h-3.5 w-3.5" />}
-          {copied ? "コピー済み" : "結果をコピー"}
-        </button>
+        <div className="flex gap-1.5">
+          <button
+            className="btn btn-ghost px-2.5"
+            onClick={onSaveImage}
+            type="button"
+            title="送金結果を画像で保存"
+            aria-label="送金結果を画像で保存"
+          >
+            <IconImage className="h-4 w-4" />
+          </button>
+          <button className="btn btn-primary" onClick={onCopy} type="button">
+            {copied ? <IconCheck className="h-3.5 w-3.5" /> : <IconCopy className="h-3.5 w-3.5" />}
+            {copied ? "コピー済み" : "コピー"}
+          </button>
+        </div>
       }
     >
       {transfers.length === 0 ? (

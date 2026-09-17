@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { BasicsEditor } from "./components/BasicsEditor";
@@ -8,24 +7,35 @@ import { ExpenseEditor, type NamedPerson } from "./components/ExpenseEditor";
 import { GroupEditor } from "./components/GroupEditor";
 import { PeopleEditor } from "./components/PeopleEditor";
 import { ResetDialog } from "./components/ResetDialog";
+import { StartChoice } from "./components/StartChoice";
+import { ThemeToggle } from "./components/ThemeToggle";
 import {
   BreakdownTable,
   SummaryHero,
   TransferList,
   Warnings,
 } from "./components/ResultPanel";
-import { IconCheck, IconCopy, IconWarning, Toast } from "./components/ui";
+import {
+  IconCheck,
+  IconCopy,
+  IconWarning,
+  Toast,
+  Wordmark,
+} from "./components/ui";
 import { calculateBill, formatYen, validateWeightInput } from "./calc";
 import { copyToClipboard } from "./clipboard";
 import {
   type AppState,
+  cloneEmptyState,
   cloneInitialState,
   type ExpenseInput,
   type GroupInput,
   makeId,
   type PersonInput,
 } from "./model";
+import { saveShareCard } from "./shareImage";
 import { useStoredState } from "./storage";
+import { useTheme } from "./theme";
 
 function newExpense(payerId = ""): ExpenseInput {
   return {
@@ -49,7 +59,9 @@ type ToastState = {
 };
 
 export default function Page() {
-  const { state, setState, recoveredStorage } = useStoredState(cloneInitialState());
+  const { state, setState, recoveredStorage, hasStoredState, hydrated } =
+    useStoredState(cloneInitialState());
+  const [theme] = useTheme();
   const [resetOpen, setResetOpen] = useState(false);
   const [undoState, setUndoState] = useState<AppState | null>(null);
   const [copied, setCopied] = useState(false);
@@ -175,6 +187,23 @@ export default function Page() {
     }));
   }, [setState]);
 
+  const addManyPeople = useCallback(
+    (names: string[]) => {
+      setState((previous) => ({
+        ...previous,
+        people: [
+          ...previous.people,
+          ...names.map((name) => ({
+            id: makeId(),
+            name,
+            groupId: previous.groups[0]?.id ?? "",
+          })),
+        ],
+      }));
+    },
+    [setState]
+  );
+
   const updatePerson = useCallback(
     (id: string, patch: Partial<PersonInput>) => {
       setState((previous) => ({
@@ -280,11 +309,31 @@ export default function Page() {
     }
   }, [copyText]);
 
+  const handleSaveImage = useCallback(async () => {
+    const isDark =
+      theme === "dark" ||
+      (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    const ok = await saveShareCard(state.title, calculation, isDark);
+    setToast(
+      ok
+        ? { message: "画像を保存しました", tone: "ok" }
+        : { message: "画像を作れませんでした", tone: "error" }
+    );
+  }, [state.title, calculation, theme]);
+
   const confirmReset = useCallback(() => {
     setUndoState(structuredClone(state));
     setState(cloneInitialState());
     setResetOpen(false);
   }, [state, setState]);
+
+  const startWithSample = useCallback(() => {
+    setState(cloneInitialState());
+  }, [setState]);
+
+  const startEmpty = useCallback(() => {
+    setState(cloneEmptyState());
+  }, [setState]);
 
   const undoReset = useCallback(() => {
     if (!undoState) return;
@@ -320,9 +369,8 @@ export default function Page() {
       >
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-sm font-semibold tracking-tight sm:text-base">
-              割り勘アプリ
-              <span className="ml-1.5 text-xs font-normal text-ink-subtle">研究室用</span>
+            <h1 className="truncate">
+              <Wordmark />
             </h1>
             {/*
               truncate（overflow:hidden）を <a> 自身に付けると、タップ領域を広げる
@@ -342,6 +390,7 @@ export default function Page() {
             </a>
           </div>
 
+          <ThemeToggle />
           <button className="btn btn-ghost" onClick={() => setResetOpen(true)} type="button">
             リセット
           </button>
@@ -353,24 +402,20 @@ export default function Page() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="relative mb-5 overflow-hidden rounded-2xl bg-canvas-accent px-5 py-5 sm:px-6 sm:py-6">
-          <div className="relative z-10 max-w-lg">
-            <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-              立替をまとめて、送金までを一発で
-            </h2>
-            <p className="mt-1.5 text-xs leading-relaxed text-ink-muted sm:text-sm">
-              グループごとに負担の重みを変えられる割り勘ツールです。入力はこの端末に自動保存されます。
-            </p>
-          </div>
-          <Image
-            className="pointer-events-none absolute -bottom-6 -right-4 hidden opacity-70 sm:block dark:opacity-25"
-            src="/party-snacks.svg"
-            alt=""
-            aria-hidden="true"
-            width={200}
-            height={164}
-            priority
-          />
+        {/*
+          以前はここに装飾イラストを置いていたが、1枚だけ浮いていたので外した。
+          代わりに字の大きさと余白でリズムを作る。
+        */}
+        <div className="mb-6 max-w-2xl">
+          <h2 className="text-2xl font-bold leading-snug tracking-tight sm:text-3xl">
+            立替をまとめて、
+            <br className="sm:hidden" />
+            送金までを一発で
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+            グループごとに負担の重みを変えられる割り勘ツールです。
+            入力内容はこの端末にだけ保存されます。
+          </p>
         </div>
 
         {recoveredStorage && (
@@ -412,6 +457,7 @@ export default function Page() {
               weightByGroup={weightByGroup}
               namedCount={calculation.rows.length}
               onAdd={addPerson}
+              onAddMany={addManyPeople}
               onChange={updatePerson}
               onRemove={removePerson}
             />
@@ -451,6 +497,7 @@ export default function Page() {
               copyText={copyText}
               copied={copied}
               onCopy={handleCopy}
+              onSaveImage={handleSaveImage}
             />
 
             <BreakdownTable rows={calculation.rows} />
@@ -461,6 +508,14 @@ export default function Page() {
           入力内容はサーバーに送信されず、この端末のブラウザにのみ保存されます。
         </footer>
       </main>
+
+      {/*
+        localStorage を読み終える前は初回訪問か判断できないので、
+        hydrated を待ってから出す。
+      */}
+      {hydrated && !hasStoredState && (
+        <StartChoice onSample={startWithSample} onEmpty={startEmpty} />
+      )}
 
       {resetOpen && (
         <ResetDialog onCancel={() => setResetOpen(false)} onConfirm={confirmReset} />
