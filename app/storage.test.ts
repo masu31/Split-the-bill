@@ -45,3 +45,23 @@ test("形の違う保存データも削除して復旧する", () => {
   assert.deepEqual(loadStoredState(storage), { state: null, recovered: true });
   assert.equal(values.has(STORAGE_KEY), false);
 });
+
+test("サイトデータがブロックされていても例外を投げない", () => {
+  const storage = {
+    getItem: () => {
+      throw new DOMException("blocked", "SecurityError");
+    },
+    removeItem: () => {
+      throw new DOMException("blocked", "SecurityError");
+    },
+  };
+
+  // 読めないだけなので「壊れていた」扱いにはしない
+  assert.deepEqual(loadStoredState(storage), { state: null, recovered: false });
+});
+
+test("壊れた支出があると state 全体を受け付けない", () => {
+  const state = cloneInitialState();
+  state.expenses[0].payerId = "unknown-person";
+  assert.equal(parseStoredState(state), null);
+});

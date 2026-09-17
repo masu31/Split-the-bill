@@ -12,8 +12,16 @@ export type NumberValidation = {
   error: string | null;
 };
 
+/**
+ * 日本語 IME では全角数字（１２０００）がそのまま入りやすい。
+ * NFKC で半角へ畳んでから検証する。
+ */
+function normalizeNumericInput(input: string): string {
+  return input.normalize("NFKC").trim();
+}
+
 export function validateMoneyInput(input: string): NumberValidation {
-  const trimmed = input.trim();
+  const trimmed = normalizeNumericInput(input);
   if (trimmed === "") return { value: 0, error: null };
 
   const normalized = trimmed.replace(/[,￥¥\s]/g, "");
@@ -33,7 +41,7 @@ export function validateMoneyInput(input: string): NumberValidation {
 }
 
 export function validateWeightInput(input: string): NumberValidation {
-  const trimmed = input.trim();
+  const trimmed = normalizeNumericInput(input);
   if (trimmed === "") return { value: 0, error: null };
   if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(trimmed)) {
     return { value: 0, error: "0以上の数値を入力してください。" };
