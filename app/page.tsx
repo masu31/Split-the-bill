@@ -324,14 +324,20 @@ export default function Page() {
               割り勘アプリ
               <span className="ml-1.5 text-xs font-normal text-ink-subtle">研究室用</span>
             </h1>
+            {/*
+              truncate（overflow:hidden）を <a> 自身に付けると、タップ領域を広げる
+              ::after が切り取られてしまう。省略は内側の span に持たせる。
+            */}
             <a
               href="#result"
-              className="num mt-0.5 block truncate text-[11px] text-ink-muted hover:text-brand lg:pointer-events-none"
+              className="tap-target num mt-0.5 block text-[11px] text-ink-muted hover:text-brand lg:pointer-events-none"
             >
-              参加者負担 {formatYen(calculation.remainder)}円 ・ 送金{" "}
-              {calculation.transfers.length}件
-              <span className="ml-1 lg:hidden" aria-hidden="true">
-                ↓
+              <span className="block truncate">
+                参加者負担 {formatYen(calculation.remainder)}円 ・ 送金{" "}
+                {calculation.transfers.length}件
+                <span className="ml-1 lg:hidden" aria-hidden="true">
+                  ↓
+                </span>
               </span>
             </a>
           </div>

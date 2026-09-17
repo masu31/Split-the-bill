@@ -166,3 +166,11 @@ test("グループを自由に増やしても重み配分は合計を保つ", ()
   assert.equal(result.rows.reduce((sum, row) => sum + row.share, 0), 33333);
   assert.equal(result.rows.find((row) => row.id === "person-e")?.weight, 5.5);
 });
+
+test("参加者も支出も0件にできる（全部消して作り直せる）", () => {
+  const result = calculateBill(makeState({ people: [], expenses: [] }));
+  assert.equal(result.rows.length, 0);
+  assert.equal(result.transfers.length, 0);
+  assert.equal(result.total, 0);
+  assert.ok(result.warnings.some((warning) => warning.includes("参加者がいません")));
+});

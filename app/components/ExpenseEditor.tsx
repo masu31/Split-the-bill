@@ -22,7 +22,6 @@ function ExpenseCard({
   expense,
   index,
   people,
-  canRemove,
   onChange,
   onToggleTarget,
   onSetTargets,
@@ -31,7 +30,6 @@ function ExpenseCard({
   expense: ExpenseInput;
   index: number;
   people: NamedPerson[];
-  canRemove: boolean;
   onChange: (patch: Partial<ExpenseInput>) => void;
   onToggleTarget: (personId: string) => void;
   onSetTargets: (personIds: string[]) => void;
@@ -63,9 +61,8 @@ function ExpenseCard({
           className="btn btn-danger-ghost px-2"
           onClick={onRemove}
           type="button"
-          disabled={!canRemove}
           aria-label={`${label}を削除`}
-          title={canRemove ? "削除" : "支出は1件以上必要です"}
+          title="削除"
         >
           <IconTrash className="h-4 w-4" />
         </button>
@@ -175,7 +172,7 @@ function ExpenseCard({
               {people.map((p) => (
                 <label
                   key={p.id}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-full border border-line-strong bg-surface py-1.5 pl-1.5 pr-3 text-xs transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand"
+                  className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-line-strong bg-surface py-1.5 pl-2 pr-3.5 text-xs transition-colors has-[:checked]:border-brand has-[:checked]:bg-brand-soft has-[:checked]:text-brand-ink has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand"
                 >
                   <input
                     className="sr-only"
@@ -271,7 +268,6 @@ export function ExpenseEditor({
                 expense={expense}
                 index={i}
                 people={people}
-                canRemove={expenses.length > 1}
                 onChange={(patch) => onChange(expense.id, patch)}
                 onToggleTarget={(personId) => onToggleTarget(expense.id, personId)}
                 onSetTargets={(personIds) => onSetTargets(expense.id, personIds)}

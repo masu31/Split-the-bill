@@ -9,7 +9,6 @@ function PersonCard({
   index,
   groups,
   weightLabel,
-  canRemove,
   onChange,
   onRemove,
 }: {
@@ -17,7 +16,6 @@ function PersonCard({
   index: number;
   groups: GroupInput[];
   weightLabel: string;
-  canRemove: boolean;
   onChange: (patch: Partial<PersonInput>) => void;
   onRemove: () => void;
 }) {
@@ -41,9 +39,8 @@ function PersonCard({
           className="btn btn-danger-ghost px-2"
           onClick={onRemove}
           type="button"
-          disabled={!canRemove}
           aria-label={`${displayName || fallbackLabel}を削除`}
-          title={canRemove ? "削除" : "参加者は1人以上必要です"}
+          title="削除"
         >
           <IconTrash className="h-4 w-4" />
         </button>
@@ -121,7 +118,6 @@ export function PeopleEditor({
               index={index}
               groups={groups}
               weightLabel={String(weightByGroup.get(person.groupId) ?? 0)}
-              canRemove={people.length > 1}
               onChange={(patch) => onChange(person.id, patch)}
               onRemove={() => onRemove(person.id)}
             />

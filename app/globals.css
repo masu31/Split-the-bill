@@ -231,7 +231,9 @@ body {
   gap: 0.375rem;
   border-radius: 0.75rem;
   border: 1px solid transparent;
+  /* タップ領域を 44x44 以上にする（アイコンだけのボタンは幅が足りなくなる） */
   min-height: 2.75rem;
+  min-width: 2.75rem;
   padding: 0.5rem 0.875rem;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -275,6 +277,21 @@ body {
   &:hover:not(:disabled) {
     background-color: var(--neg-soft);
     color: var(--neg);
+  }
+}
+
+/*
+ * 行の高さを変えずにタップ領域だけ広げる。
+ * ヘッダーの小さいリンクのように、レイアウト上は細くしたいが
+ * 指では押しにくい要素に使う。
+ */
+@utility tap-target {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -1rem 0;
   }
 }
 
