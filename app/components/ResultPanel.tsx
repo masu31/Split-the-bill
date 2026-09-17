@@ -183,7 +183,7 @@ export function TransferList({
       )}
 
       <details className="group mt-3" data-print="hide">
-        <summary className="cursor-pointer list-none rounded-xl bg-surface-2 px-3 py-2 text-xs font-medium text-ink-muted transition-colors hover:text-ink">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center rounded-xl bg-surface-2 px-3 text-xs font-medium text-ink-muted transition-colors hover:text-ink">
           <span className="inline-flex items-center gap-1.5">
             <span className="transition-transform group-open:rotate-90">▶</span>
             コピペ用テキストを見る
